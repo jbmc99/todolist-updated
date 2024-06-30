@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\View\View;
 
 class TaskController extends Controller
 {
@@ -12,9 +14,10 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(): View
     {
-        //
+        $tasks = Task::latest()->paginate(3);
+        return view('index', ['tasks' => $tasks]);
     }
 
     /**
@@ -22,9 +25,9 @@ class TaskController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(): View
     {
-        //
+        return view('create');
     }
 
     /**
@@ -33,9 +36,15 @@ class TaskController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        //
+        
+        $request->validate([
+            'title' => 'required',
+            'description' => 'required'
+        ]);
+       Task::create($request->all());
+       return redirect()->route('tasks.index')->with('success', 'Nueva tarea creada exitosamente!');
     }
 
     /**
@@ -55,9 +64,10 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function edit(Task $task)
+    public function edit(Task $task): View
     {
-        //
+
+        return view('edit', ['task' => $task]);
     }
 
     /**
@@ -67,9 +77,15 @@ class TaskController extends Controller
      * @param  \App\Models\Task  $task
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Task $task)
+    public function update(Request $request, Task $task): RedirectResponse
     {
-        //
+         $request->validate([
+            'title' => 'required',
+            'description' => 'required'
+        ]);
+                $task->update($request->all());
+                       return redirect()->route('tasks.index')->with('success', 'Nueva tarea actualizada exitosamente!');
+
     }
 
     /**
@@ -80,6 +96,7 @@ class TaskController extends Controller
      */
     public function destroy(Task $task)
     {
-        //
+        $task->delete();
+        return redirect()->route('tasks.index')->with('success', 'Tarea eliminada exitosamente!');
     }
 }
